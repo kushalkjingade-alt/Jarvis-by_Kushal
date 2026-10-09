@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #070604;
+  --color-surface: #12100c;
+  --color-surface-2: #1c1812;
+  --color-fg: #f6f0e6;
+  --color-muted: #b3a38d;
+  --color-primary: #f0a11a;
+  --color-accent: #3dccc7;
+  --color-danger: #ff5a3a;
+  --color-border: #3a3122;
+  --font-display: "Orbitron", ui-sans-serif, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, sans-serif;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background:
+      radial-gradient(ellipse at top, color-mix(in oklab, var(--color-primary) 18%, transparent), transparent 46%),
+      var(--color-bg);
+    color: var(--color-fg);
+    line-height: 1.5;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  input,
+  textarea,
+  select {
+    color-scheme: dark;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility glow-amber {
+  box-shadow: 0 0 28px color-mix(in oklab, var(--color-primary) 42%, transparent);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

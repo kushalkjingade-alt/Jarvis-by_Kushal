@@ -1,0 +1,30 @@
+node_modules/
+dist/
+build/
+.output/
+.vercel/
+.cache/
+.tanstack/
+coverage/
+
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store
+
+android/.gradle/
+android/local.properties
+android/**/build/
+
+# Local Grok configuration and generated state
+.grok/
+.grok-status
+
+# Local attachments; review before sharing
+attachments/
+
+# Temporary and backup files
+.node_modules.lock
+*.bak
