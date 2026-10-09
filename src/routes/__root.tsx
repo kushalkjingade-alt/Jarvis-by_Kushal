@@ -15,6 +15,10 @@ export const Route = createRootRoute({
         name: "description",
         content: "JARVIS BY KUSHAL is a mobile AI assistant for voice, chat, weather, notes, and screen reading.",
       },
+      {
+        name: "google-site-verification",
+        content: "RFB_URpnIW05CtoT0_cg6dExxE9AnnXmpDjkjR6Y6zw",
+      },
       { name: "theme-color", content: "#070604" },
     ],
     links: [
