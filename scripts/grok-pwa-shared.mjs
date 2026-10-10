@@ -179,6 +179,7 @@ export function renderWebManifest(hostHeader) {
     start_url: "/",
     scope: "/",
     display: "standalone",
+    orientation: "any",
     background_color: "#000000",
     theme_color: "#000000",
     categories: ["utilities", "productivity"],
@@ -188,6 +189,7 @@ export function renderWebManifest(hostHeader) {
         src: "/__grok/icon-180.png",
         sizes: "180x180",
         type: "image/png",
+        purpose: "any",
       },
       {
         src: "/__grok/icon-192.png",
@@ -200,6 +202,21 @@ export function renderWebManifest(hostHeader) {
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
+      },
+    ],
+    shortcuts: [
+      {
+        name: isJarvis ? "Open JARVIS" : `Open ${name}`,
+        short_name: isJarvis ? "JARVIS" : name,
+        description: "Open the assistant",
+        url: "/",
+        icons: [
+          {
+            src: "/__grok/icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+        ],
       },
     ],
   };
