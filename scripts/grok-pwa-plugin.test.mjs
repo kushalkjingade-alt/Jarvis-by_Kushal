@@ -6,9 +6,9 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 import {
   appNameFromHost,
-  createHeadInjector,
+  createHeadInjector as createHeadInjectorImpl,
   grokXCreatorHeadTags,
-  injectGrokPwaHead,
+  injectGrokPwaHead as injectGrokPwaHeadImpl,
   isDocumentPath,
   isInstallQuery,
   publicAppHost,
@@ -19,7 +19,19 @@ import {
 } from "./grok-pwa-shared.mjs";
 import { renderInstallPage } from "./grok-pwa-plugin.mjs";
 
+
 const TEMPLATE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+// Tests that do not provide a project root use an isolated empty fixture,
+// never the real application's site.json or public/og.jpg.
+const TEST_ROOT = mkdtempSync(join(tmpdir(), "grok-pwa-test-root-"));
+
+const injectGrokPwaHead = (html, ctx = {}) =>
+  injectGrokPwaHeadImpl(html, { cwd: TEST_ROOT, ...ctx });
+
+const createHeadInjector = (ctx = {}) =>
+  createHeadInjectorImpl({ cwd: TEST_ROOT, ...ctx });
+
 
 test("injects before </head>", () => {
   const out = injectGrokPwaHead("<html><head><title>x</title></head><body></body></html>");

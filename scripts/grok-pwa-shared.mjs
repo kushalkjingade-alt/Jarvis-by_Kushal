@@ -158,11 +158,21 @@ export function renderInstallPageHtml(template, { host, url } = {}) {
 }
 
 export function renderWebManifest(hostHeader) {
-  const name = appNameFromHost(hostHeader);
+  const host = String(hostHeader ?? "")
+    .split(",")[0]
+    .trim()
+    .split(":")[0]
+    .toLowerCase();
+
+  const isJarvis = host === "jarvis-spark-xi.vercel.app";
+  const name = isJarvis ? "JARVIS BY KUSHAL" : appNameFromHost(hostHeader);
+
   return JSON.stringify(
     {
       name,
-      short_name: name,
+      short_name: isJarvis ? "JARVIS" : name,
+      description:
+        "JARVIS BY KUSHAL is a personal AI assistant for voice, chat, weather, notes, and screen reading.",
       id: "/",
       start_url: "/",
       scope: "/",
@@ -173,6 +183,16 @@ export function renderWebManifest(hostHeader) {
         {
           src: "/__grok/icon-180.png",
           sizes: "180x180",
+          type: "image/png",
+        },
+        {
+          src: "/__grok/icon-192.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+        {
+          src: "/__grok/icon-512.png",
+          sizes: "512x512",
           type: "image/png",
         },
       ],
