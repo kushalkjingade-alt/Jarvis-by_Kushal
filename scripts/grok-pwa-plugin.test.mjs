@@ -527,6 +527,42 @@ test("renders the manifest with the per-app name", () => {
   assert.equal(manifest.icons[0].src, "/__grok/icon-180.png");
 });
 
+test("JARVIS manifest includes launch and share handling", () => {
+  const manifest = JSON.parse(
+    renderWebManifest("jarvis-spark-xi.vercel.app")
+  );
+
+  assert.deepEqual(manifest.launch_handler, {
+    client_mode: "navigate-existing",
+  });
+
+  assert.deepEqual(manifest.share_target, {
+    action: "/",
+    method: "GET",
+    params: {
+      title: "title",
+      text: "text",
+      url: "url",
+    },
+  });
+
+  assert.deepEqual(manifest.file_handlers, [
+    {
+      action: "/?source=file-handler",
+      accept: {
+        "text/plain": [".txt"],
+        "text/markdown": [".md"],
+        "application/json": [".json"],
+      },
+    },
+  ]);
+});
+
+test("other app manifests do not receive JARVIS launch handling", () => {
+  const manifest = JSON.parse(renderWebManifest("wild-race.grok.me"));
+  assert.equal(manifest.launch_handler, undefined);
+});
+
 // Tripwires: the deployed-app path only works if Nitro scans server/ — an
 // accidental edit that drops serverDir or the middleware file would otherwise
 // fail silently (published apps would just render the app for ?install=1).

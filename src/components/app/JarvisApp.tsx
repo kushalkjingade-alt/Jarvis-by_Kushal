@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AssistantProvider } from "@/components/app/assistant";
 import { NavContext, type SetupMode } from "@/components/app/nav";
@@ -27,6 +27,7 @@ import { NotesScreen, RemindersScreen, WeatherScreen } from "@/components/screen
 import { VoiceStage } from "@/components/screens/VoiceStage";
 import { useJarvis } from "@/lib/store";
 import type { ScreenId } from "@/lib/types";
+import { setIncomingContent } from "@/lib/incoming-content";
 
 const TABS = new Set<ScreenId>(["home", "chat", "tools", "settings"]);
 
@@ -109,6 +110,8 @@ function ScreenBody({ screen }: { screen: ScreenId }) {
 
 export function JarvisApp() {
   const [stack, setStack] = useState<ScreenId[]>(["splash"]);
+  const [incomingReady, setIncomingReady] = useState(false);
+  const incomingOpened = useRef(false);
   const [setupMode, setSetupMode] = useState<SetupMode>("first");
   const screen = stack[stack.length - 1] ?? "splash";
   const textScale = useJarvis((state) => state.textScale);
@@ -132,6 +135,64 @@ export function JarvisApp() {
     setSetupMode(mode);
     setStack((current) => (mode === "first" ? ["setup"] : [...current, "setup"]));
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    const MAX_BYTES = 1024 * 1024;
+    const acceptFile = async (file: File) => {
+      if (!active || !/\.(txt|md|json)$/i.test(file.name) || file.size > MAX_BYTES) return;
+      try {
+        const body = await file.text();
+        if (!active || body.length > MAX_BYTES) return;
+        incomingOpened.current = false;
+        setIncomingContent({ title: file.name.replace(/\.(txt|md|json)$/i, "").slice(0, 120) || "Imported note", body });
+        setIncomingReady(true);
+      } catch { /* Invalid or unreadable incoming files are ignored safely. */ }
+    };
+    const url = new URL(window.location.href);
+    const title = url.searchParams.get("title");
+    const sharedText = url.searchParams.get("text");
+    const sharedUrl = url.searchParams.get("url");
+    if (title !== null || sharedText !== null || sharedUrl !== null) {
+      const body = [sharedText, sharedUrl].filter(Boolean).join("\n");
+      if (body.length <= MAX_BYTES) {
+        incomingOpened.current = false;
+        setIncomingContent({ title: (title || "Shared content").trim().slice(0, 120) || "Shared content", body });
+        setIncomingReady(true);
+      }
+      url.searchParams.delete("title");
+      url.searchParams.delete("text");
+      url.searchParams.delete("url");
+    }
+    if (url.searchParams.get("source") === "file-handler") {
+      url.searchParams.delete("source");
+    }
+    if (url.href !== window.location.href) {
+      window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+    }
+    const queue = (window as Window & { launchQueue?: { setConsumer: (consumer: (params: { files?: Array<{ getFile: () => Promise<File> }> }) => void) => void } }).launchQueue;
+    queue?.setConsumer((params) => {
+      const handle = params.files?.[0];
+      if (handle) void handle.getFile().then(acceptFile).catch(() => {});
+    });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!incomingReady || incomingOpened.current) return;
+
+    if (screen === "notes") {
+      incomingOpened.current = true;
+      setIncomingReady(false);
+      return;
+    }
+
+    if (screen !== "home") return;
+
+    incomingOpened.current = true;
+    setIncomingReady(false);
+    go("notes");
+  }, [screen, incomingReady, go]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {

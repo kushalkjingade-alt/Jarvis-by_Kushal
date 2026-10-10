@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNav } from "@/components/app/nav";
 import { Card, ErrorNote, Field, GhostButton, PrimaryButton, ScreenHeader } from "@/components/ui";
 import { fetchWeather } from "@/lib/client-api";
 import { useJarvis } from "@/lib/store";
+import { subscribeIncomingContent } from "@/lib/incoming-content";
 
 export function WeatherScreen() {
   const { back } = useNav();
@@ -117,10 +118,60 @@ export function NotesScreen() {
   const [id, setId] = useState<string | undefined>(undefined);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [importError, setImportError] = useState("");
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return subscribeIncomingContent((incoming) => {
+      setId(undefined);
+      setTitle(incoming.title);
+      setBody(incoming.body);
+      setImportError("");
+    });
+  }, []);
+
+  const importFile = async (file: File | undefined) => {
+    setImportError("");
+    if (!file) return;
+
+    const allowed = /\.(txt|md|json)$/i.test(file.name);
+    if (!allowed) {
+      setImportError("Choose a .txt, .md, or .json file.");
+      return;
+    }
+    if (file.size > 1024 * 1024) {
+      setImportError("Files must be 1 MB or smaller.");
+      return;
+    }
+
+    try {
+      const content = await file.text();
+      setId(undefined);
+      setTitle(file.name.replace(/\.(txt|md|json)$/i, "") || "Imported note");
+      setBody(content);
+    } catch {
+      setImportError("Could not read this file. Try another file.");
+    }
+  };
+
   return (
     <div className="min-h-full">
       <ScreenHeader title="Notes" onBack={back} />
       <div className="space-y-3 px-4 pb-6">
+        <input
+          ref={fileInput}
+          type="file"
+          accept=".txt,.md,.json,text/plain,text/markdown,application/json"
+          className="hidden"
+          onChange={(event) => {
+            void importFile(event.currentTarget.files?.[0]);
+            event.currentTarget.value = "";
+          }}
+        />
+        <GhostButton type="button" onClick={() => fileInput.current?.click()}>
+          Import .txt / .md / .json
+        </GhostButton>
+        {importError ? <ErrorNote>{importError}</ErrorNote> : null}
         {notes.map((note) => (
           <button
             key={note.id}

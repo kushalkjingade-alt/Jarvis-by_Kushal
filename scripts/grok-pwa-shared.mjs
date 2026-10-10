@@ -179,6 +179,9 @@ export function renderWebManifest(hostHeader) {
     start_url: "/",
     scope: "/",
     display: "standalone",
+    ...(isJarvis
+      ? { launch_handler: { client_mode: "navigate-existing" } }
+      : {}),
     display_override: [
       "window-controls-overlay",
       "standalone",
@@ -236,6 +239,16 @@ export function renderWebManifest(hostHeader) {
               url: "url",
             },
           },
+          file_handlers: [
+            {
+              action: "/?source=file-handler",
+              accept: {
+                "text/plain": [".txt"],
+                "text/markdown": [".md"],
+                "application/json": [".json"],
+              },
+            },
+          ],
         }
       : {}),
   };
