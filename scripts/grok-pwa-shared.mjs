@@ -179,6 +179,12 @@ export function renderWebManifest(hostHeader) {
     start_url: "/",
     scope: "/",
     display: "standalone",
+    display_override: [
+      "window-controls-overlay",
+      "standalone",
+      "minimal-ui",
+      "browser",
+    ],
     orientation: "any",
     background_color: "#000000",
     theme_color: "#000000",
@@ -219,6 +225,19 @@ export function renderWebManifest(hostHeader) {
         ],
       },
     ],
+    ...(isJarvis
+      ? {
+          share_target: {
+            action: "/",
+            method: "GET",
+            params: {
+              title: "title",
+              text: "text",
+              url: "url",
+            },
+          },
+        }
+      : {}),
   };
 
   return JSON.stringify(manifest, null, 2);
